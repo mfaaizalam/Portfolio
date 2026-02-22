@@ -1,9 +1,12 @@
 import { RouterProvider } from "react-router-dom";
 import router from "./Router";
+import Navbar from "./components/Navbar";
 function App() {
   return (
     <>
+
      <RouterProvider router={router} />
+   
     </>
   );
 }
