@@ -1,11 +1,11 @@
-import LandingPage from './pages/LandingPage'
-import './App.css'
-
+import { RouterProvider } from "react-router-dom";
+import router from "./Router";
 function App() {
-
   return (
-    <LandingPage />
-  )
+    <>
+     <RouterProvider router={router} />
+    </>
+  );
 }
 
-export default App
+export default App;

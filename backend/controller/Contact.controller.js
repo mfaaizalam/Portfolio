@@ -12,9 +12,9 @@ export const transporter = nodemailer.createTransport({
 
 // Submit Contact Form
 export const submitContactForm = async (req, res) => {
-  const { name, email, Projecttype, message } = req.body;
+  const { name, email, project, message } = req.body;
 
-  console.log("Received form data:", { name, email, Projecttype, message });
+  console.log("Received form data:", { name, email, project, message });
 
   try {
     // Check if email already exists
@@ -25,7 +25,7 @@ export const submitContactForm = async (req, res) => {
     }
 
     // Save to MongoDB
-    const form = await Form.create({ name, email, Projecttype, message });
+    const form = await Form.create({ name, email, project, message });
     console.log("Form saved to MongoDB:", form);
 
     // Send email notification
@@ -35,7 +35,7 @@ export const submitContactForm = async (req, res) => {
       subject: `New Contact Form Submission from ${name}`,
       html: `<p><b>Name:</b> ${name}</p>
              <p><b>Email:</b> ${email}</p>
-             <p><b>Project Type:</b> ${Projecttype}</p>
+             <p><b>Project Type:</b> ${project}</p>
              <p><b>Message:</b> ${message}</p>`,
     };
 

@@ -9,8 +9,9 @@ const FormSchema = new mongoose.Schema({
         required: true
        
     },
-    Projecttype: {
+    project: {
         type: String,
+
     },
     message:{
         type:String,
