@@ -1,478 +1,582 @@
-// import { useRef, useState } from "react";
-// import { Link } from "react-router-dom";
-// import { motion, useInView } from "framer-motion";
-// import { LR, Stars, ArrowIcon, SH } from "../components/UI";
+import { useState, useEffect, useRef } from "react";
+import { motion, useInView, useScroll, useTransform } from "framer-motion";
 
-// const SERVICES = [
-//   {
-//     num: "01",
-//     title: "Portfolio Websites",
-//     desc: "We specialise in two things — portfolio websites and business websites — and we do them exceptionally well. If you're a creative who needs their work to speak for itself, we build exactly that. Clean, fast, and crafted with intent.",
-//     tags: ["PERSONAL BRAND", "CREATIVE", "GALLERY"],
-//   },
-//   {
-//     num: "02",
-//     title: "Business Websites",
-//     desc: "No bloated agency offering, no jack-of-all-trades approach. If you're a business that needs your website to generate real leads, we build exactly that. High-converting, polished, and built to last.",
-//     tags: ["LEAD GEN", "BRAND", "CONVERSION"],
-//   },
-// ];
+/* ── Reusable Line Reveal ── */
+function LR({ children, delay = 0, className = "" }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  return (
+    <div ref={ref} className={`overflow-hidden ${className}`}>
+      <motion.div
+        initial={{ y: "105%" }}
+        animate={inView ? { y: "0%" } : {}}
+        transition={{ duration: 0.9, delay, ease: [0.16, 1, 0.3, 1] }}
+      >
+        {children}
+      </motion.div>
+    </div>
+  );
+}
 
-// const STATS = [
-//   { label: "FOUNDED",   value: "2021" },
-//   { label: "PROJECTS",  value: "87+"  },
-//   { label: "COUNTRIES", value: "12+"  },
-//   { label: "RATING",    value: "5.0★" },
-// ];
+/* ── Fade In ── */
+function FadeIn({ children, delay = 0, className = "" }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
+  return (
+    <motion.div
+      ref={ref}
+      className={className}
+      initial={{ opacity: 0, y: 24 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.75, delay, ease: [0.16, 1, 0.3, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
-// const STEPS = [
-//   { n: "1", label: "DISCOVERY", text: "We learn your goals, audience, and brand inside-out before writing a single line of code." },
-//   { n: "2", label: "DESIGN",    text: "Custom layouts crafted in Figma — responsive, refined, and ready for your approval." },
-//   { n: "3", label: "BUILD",     text: "Production-grade code built for speed, SEO, and long-term maintainability." },
-//   { n: "4", label: "LAUNCH",    text: "We handle deployment, final QA, and stay available post-launch so you're never on your own." },
-// ];
+/* ── ArrowIcon ── */
+function ArrowIcon() {
+  return (
+    <svg width={13} height={13} viewBox="0 0 16 16" fill="none">
+      <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="2"
+        strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
-// /* ── Video Hero ── */
-// function VideoHero() {
-//   const videoRef = useRef(null);
-//   const [playing, setPlaying] = useState(true);
-//   const [muted, setMuted]     = useState(true);
+/* ── Service Card ── */
+function ServiceCard({ icon, title, description, tags, index }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  const [hovered, setHovered] = useState(false);
 
-//   const togglePlay = () => {
-//     const v = videoRef.current;
-//     if (!v) return;
-//     if (v.paused) { v.play(); setPlaying(true); }
-//     else          { v.pause(); setPlaying(false); }
-//   };
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 48 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.8, delay: index * 0.15, ease: [0.16, 1, 0.3, 1] }}
+      onHoverStart={() => setHovered(true)}
+      onHoverEnd={() => setHovered(false)}
+      className="group relative border border-gold/12 rounded-[2px] p-8 overflow-hidden cursor-pointer"
+      style={{
+        background: hovered
+          ? "linear-gradient(135deg,rgba(200,144,42,.09),rgba(200,144,42,.03))"
+          : "rgba(255,255,255,0.02)",
+        transition: "background 0.4s ease",
+      }}
+    >
+      {/* Corner accent */}
+      <div className="absolute top-0 left-0 w-12 h-px bg-gradient-to-r from-gold/60 to-transparent" />
+      <div className="absolute top-0 left-0 w-px h-12 bg-gradient-to-b from-gold/60 to-transparent" />
 
-//   const toggleMute = () => {
-//     const v = videoRef.current;
-//     if (!v) return;
-//     v.muted = !v.muted;
-//     setMuted(v.muted);
-//   };
+      {/* Hover glow */}
+      <motion.div
+        animate={{ opacity: hovered ? 1 : 0 }}
+        transition={{ duration: 0.4 }}
+        className="absolute bottom-0 right-0 rounded-full pointer-events-none"
+        style={{
+          width: "200px", height: "200px",
+          background: "radial-gradient(circle,rgba(200,144,42,.12) 0%,transparent 70%)",
+          transform: "translate(40%,40%)",
+        }}
+      />
 
-//   return (
-//     <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
-//       {/* Video */}
-//       <video
-//         ref={videoRef}
-//         autoPlay
-//         loop
-//         muted
-//         playsInline
-//         className="absolute inset-0 w-full h-full object-cover z-0"
-//         src="https://www.w3schools.com/html/mov_bbb.mp4" // ← replace with your video
-//       />
+      {/* Icon */}
+      <div className="mb-6 w-12 h-12 border border-gold/20 rounded-[2px] flex items-center justify-center bg-gold/5">
+        {icon}
+      </div>
 
-//       {/* Overlays */}
-//       <div className="absolute inset-0 z-[1]"
-//         style={{ background: "linear-gradient(to bottom,rgba(10,8,4,.78) 0%,rgba(10,8,4,.52) 50%,rgba(10,8,4,.92) 100%)" }}
-//       />
-//       <div className="absolute inset-0 z-[2] pointer-events-none"
-//         style={{ background: "radial-gradient(ellipse 70% 60% at 50% 50%,rgba(200,144,42,.13) 0%,transparent 70%)" }}
-//       />
-//       <div className="grid-bg absolute inset-0 z-[2] opacity-30" />
+      {/* Title */}
+      <div className="font-fraunces text-cream text-[22px] font-semibold mb-3 leading-snug">
+        {title}
+      </div>
 
-//       {/* Ghost text */}
-//       <div
-//         className="hidden lg:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-fraunces select-none pointer-events-none z-[3]"
-//         style={{ fontSize: "13vw", letterSpacing: ".15em", whiteSpace: "nowrap", color: "transparent", WebkitTextStroke: "1px rgba(200,144,42,.045)" }}
-//       >
-//         GOLDENHORDE
-//       </div>
+      {/* Description */}
+      <p className="text-cream/44 font-light leading-[1.8] mb-6 text-[14px]">
+        {description}
+      </p>
 
-//       {/* Content */}
-//       <div className="relative z-[10] text-center px-[5vw] max-w-[820px] mx-auto">
-//         <LR delay={0.3}>
-//           <div className="inline-flex items-center gap-2.5 border border-gold/22 px-4 py-[7px] rounded-full mb-8 bg-gold/5 backdrop-blur-sm w-fit mx-auto">
-//             <span className="font-mono-gh text-[9px] tracking-[3px] text-gold/85">ABOUT GOLDENHORDE</span>
-//           </div>
-//         </LR>
+      {/* Tags */}
+      <div className="flex flex-wrap gap-2">
+        {tags.map((tag, i) => (
+          <span key={i}
+            className="font-mono-gh text-[8px] tracking-[2.5px] text-gold/55 border border-gold/15 px-3 py-1 rounded-full bg-gold/5">
+            {tag}
+          </span>
+        ))}
+      </div>
 
-//         <LR delay={0.5}>
-//           <h1 className="font-fraunces font-semibold leading-[.92] tracking-[-0.02em] text-cream mb-3"
-//             style={{ fontSize: "clamp(40px,7vw,96px)" }}>
-//             We Build
-//           </h1>
-//         </LR>
-//         <LR delay={0.65}>
-//           <h1 className="text-shimmer font-fraunces font-light italic leading-[.92] tracking-[-0.01em] mb-7"
-//             style={{ fontSize: "clamp(40px,7vw,96px)" }}>
-//             Digital Presence.
-//           </h1>
-//         </LR>
+      {/* Arrow link */}
+      <motion.div
+        animate={{ x: hovered ? 4 : 0, opacity: hovered ? 1 : 0.4 }}
+        transition={{ duration: 0.3 }}
+        className="mt-6 inline-flex items-center gap-2 text-gold font-mono-gh text-[9px] tracking-[2px]"
+      >
+        LEARN MORE <ArrowIcon />
+      </motion.div>
+    </motion.div>
+  );
+}
 
-//         <motion.div
-//           initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
-//           transition={{ duration: 1, delay: 1, ease: [0.16, 1, 0.3, 1] }}
-//           className="h-px w-1/2 mx-auto mb-7 origin-center"
-//           style={{ background: "linear-gradient(90deg,transparent,#C8902A,transparent)" }}
-//         />
+/* ── Image Slider ── */
+function ImageSlider({ images, title }) {
+  const [current, setCurrent] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
 
-//         <motion.p
-//           initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-//           transition={{ duration: 0.7, delay: 1.15 }}
-//           className="text-cream/44 leading-[1.9] font-light max-w-[520px] mx-auto mb-10"
-//           style={{ fontSize: "clamp(13px,1.4vw,15px)" }}
-//         >
-//           GoldenHorde is a boutique web studio specialising in portfolio and business websites —
-//           crafted with intent, launched with precision, and built to convert.
-//         </motion.p>
+  useEffect(() => {
+    const t = setInterval(() => {
+      setCurrent(c => (c + 1) % images.length);
+    }, 3500);
+    return () => clearInterval(t);
+  }, [images.length]);
 
-//         <motion.div
-//           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-//           transition={{ duration: 0.7, delay: 1.35 }}
-//           className="flex gap-3 flex-wrap justify-center"
-//         >
-//           <motion.div whileHover={{ scale: 1.03, boxShadow: "0 0 44px rgba(200,144,42,.35)" }} whileTap={{ scale: 0.97 }}>
-//             <Link
-//               to="/contact"
-//               className="inline-flex items-center gap-2.5 text-ink px-7 py-3.5 rounded-[2px] font-mono-gh text-[10px] tracking-[3px] font-bold no-underline"
-//               style={{ background: "linear-gradient(135deg,#C8902A,#E2AC46)" }}
-//             >
-//               START YOUR PROJECT <ArrowIcon />
-//             </Link>
-//           </motion.div>
-//           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
-//             <Link
-//               to="/services"
-//               className="inline-flex items-center gap-2.5 border border-gold/22 text-cream/44 hover:text-gold-l px-7 py-3.5 rounded-[2px] font-mono-gh text-[10px] tracking-[3px] font-medium no-underline transition-all duration-300"
-//             >
-//               OUR SERVICES
-//             </Link>
-//           </motion.div>
-//         </motion.div>
-//       </div>
+  const goTo = (i) => {
+    if (!isAnimating && i !== current) {
+      setIsAnimating(true);
+      setCurrent(i);
+      setTimeout(() => setIsAnimating(false), 600);
+    }
+  };
 
-//       {/* Video controls */}
-//       <motion.div
-//         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }}
-//         className="absolute bottom-8 right-[5vw] z-[10] flex gap-2"
-//       >
-//         <button
-//           onClick={togglePlay}
-//           className="border border-gold/20 bg-ink/50 backdrop-blur-md text-cream/70 hover:text-gold-l px-4 py-2 rounded-[2px] font-mono-gh text-[8px] tracking-[2.5px] cursor-pointer transition-colors duration-200"
-//         >
-//           {playing ? "❙❙ PAUSE" : "▶ PLAY"}
-//         </button>
-//         <button
-//           onClick={toggleMute}
-//           className="border border-gold/20 bg-ink/50 backdrop-blur-md text-cream/70 hover:text-gold-l px-4 py-2 rounded-[2px] font-mono-gh text-[8px] tracking-[2.5px] cursor-pointer transition-colors duration-200"
-//         >
-//           {muted ? "🔇 SOUND" : "🔊 MUTE"}
-//         </button>
-//       </motion.div>
+  return (
+    <div className="relative w-full h-full overflow-hidden rounded-[2px]">
+      {images.map((img, i) => (
+        <motion.img
+          key={i}
+          src={img}
+          alt={`${title} ${i + 1}`}
+          className="absolute inset-0 w-full h-full object-cover"
+          initial={{ opacity: 0, scale: 1.06 }}
+          animate={i === current ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 1.04 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        />
+      ))}
+      {/* Overlay gradient */}
+      <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent pointer-events-none" />
+      {/* Dots */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+        {images.map((_, i) => (
+          <button key={i} onClick={() => goTo(i)}
+            className="w-[5px] h-[5px] rounded-full transition-all duration-300"
+            style={{ background: i === current ? "#C8902A" : "rgba(200,144,42,0.3)" }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 
-//       {/* Scroll cue */}
-//       <motion.div
-//         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.2 }}
-//         className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[10] flex flex-col items-center gap-2"
-//       >
-//         <span className="font-mono-gh text-[7px] tracking-[3px] text-gold/40">SCROLL</span>
-//         <motion.div
-//           animate={{ y: [0, 6, 0] }}
-//           transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-//           className="w-px h-8 bg-gradient-to-b from-gold/40 to-transparent"
-//         />
-//       </motion.div>
-//     </section>
-//   );
-// }
+/* ── Work Showcase ── */
+const SHOWCASES = [
+  {
+    category: "React Portfolio",
+    headline: "Portfolio & Personal Brands",
+    sub: "Lightning-fast React sites built for creators, freelancers, and studios who demand a standout digital identity.",
+    images: [
+      "https://images.unsplash.com/photo-1547658719-da2b51169166?w=800&q=80",
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80",
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80",
+    ],
+    align: "left",
+  },
+  {
+    category: "WordPress Business",
+    headline: "Business Websites",
+    sub: "CMS-powered business sites that are easy to manage, SEO-ready, and crafted to convert visitors into customers.",
+    images: [
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80",
+      "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&q=80",
+      "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&q=80",
+    ],
+    align: "right",
+  },
+  {
+    category: "E-Commerce",
+    headline: "Online Stores",
+    sub: "Full-featured e-commerce experiences — from product discovery to checkout — engineered for growth and built to scale.",
+    images: [
+      "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80",
+      "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&q=80",
+      "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=800&q=80",
+    ],
+    align: "left",
+  },
+];
 
-// /* ── Stat Bar ── */
-// function StatBar() {
-//   const ref = useRef(null);
-//   const inView = useInView(ref, { once: true });
+/* ── Process Step ── */
+const PROCESS = [
+  { n: "01", title: "Discovery", desc: "We deep-dive into your brand, audience, and goals before a single pixel is placed." },
+  { n: "02", title: "Design", desc: "Custom wireframes and high-fidelity designs crafted around your unique identity." },
+  { n: "03", title: "Build", desc: "Clean, performant code — React or WordPress — built for speed and scalability." },
+  { n: "04", title: "Launch", desc: "Rigorous QA, seamless deployment, and post-launch support to ensure success." },
+];
 
-//   return (
-//     <motion.div
-//       ref={ref}
-//       initial={{ opacity: 0, y: 16 }} animate={inView ? { opacity: 1, y: 0 } : {}}
-//       transition={{ duration: 0.7 }}
-//       className="grid grid-cols-2 md:grid-cols-4 border-b border-gold/10"
-//     >
-//       {STATS.map((s, i) => (
-//         <div key={i} className="py-6 pl-[clamp(14px,3vw,36px)] border-r border-gold/10 last:border-r-0">
-//           <div className="font-fraunces font-semibold text-gold-l leading-none mb-1.5"
-//             style={{ fontSize: "clamp(26px,3.2vw,46px)" }}>
-//             {s.value}
-//           </div>
-//           <div className="font-mono-gh text-[8px] tracking-[3px] text-cream/44">{s.label}</div>
-//         </div>
-//       ))}
-//     </motion.div>
-//   );
-// }
+/* ══════════════════════════════════════
+   ABOUT PAGE
+══════════════════════════════════════ */
+export default function About() {
+  const heroRef = useRef(null);
+  const { scrollY } = useScroll();
+  const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
+  const heroY = useTransform(scrollY, [0, 400], [0, 80]);
 
-// /* ── Why Choose Us ── */
-// function WhyUs() {
-//   const ref = useRef(null);
-//   const inView = useInView(ref, { once: true, margin: "-60px" });
+  const SERVICES = [
+    {
+      icon: (
+        <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="#C8902A" strokeWidth="1.5" strokeLinecap="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8M12 17v4" />
+        </svg>
+      ),
+      title: "React Portfolio Sites",
+      description: "We build blazing-fast, component-driven portfolio websites using React. Every interaction feels alive — from page transitions to micro-animations — giving creative professionals a digital home that matches their ambition.",
+      tags: ["React", "Framer Motion", "Tailwind CSS", "Custom Animations", "Performance"],
+    },
+    {
+      icon: (
+        <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="#C8902A" strokeWidth="1.5" strokeLinecap="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+        </svg>
+      ),
+      title: "WordPress Business Sites",
+      description: "Robust, CMS-powered websites built for businesses that need flexibility and control. We design custom WordPress themes that are SEO-optimised, mobile-first, and fully manageable by your team.",
+      tags: ["WordPress", "Custom Themes", "SEO", "WooCommerce", "Page Speed"],
+    },
+    {
+      icon: (
+        <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="#C8902A" strokeWidth="1.5" strokeLinecap="round">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" />
+        </svg>
+      ),
+      title: "E-Commerce Stores",
+      description: "End-to-end online stores designed to sell. We craft the full journey — from product pages that convert to checkouts that don't leak. Scalable, secure, and optimised for revenue from day one.",
+      tags: ["Shopify", "WooCommerce", "Payment Integration", "Product UI", "Conversion CRO"],
+    },
+  ];
 
-//   return (
-//     <section ref={ref} className="px-[5vw] py-[clamp(60px,10vh,120px)] relative overflow-hidden border-t border-gold/10">
-//       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none rounded-full"
-//         style={{ width: "min(600px,80vw)", height: "min(600px,80vw)", background: "radial-gradient(circle,rgba(200,144,42,.07) 0%,transparent 65%)" }}
-//       />
+  return (
+    <main className="bg-[#0c0a07] min-h-screen">
 
-//       <div className="max-w-[900px] mx-auto relative z-10">
-//         <SH
-//           tag="WHY GOLDENHORDE"
-//           h1="Your digital presence should"
-//           italic="work as hard as you do."
-//           center
-//         />
+      {/* ══ HERO SECTION ══ */}
+      <section ref={heroRef} className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
 
-//         <motion.p
-//           initial={{ opacity: 0, y: 12 }} animate={inView ? { opacity: 1, y: 0 } : {}}
-//           transition={{ duration: 0.7, delay: 0.2 }}
-//           className="text-cream/44 leading-[1.9] font-light text-center max-w-[620px] mx-auto"
-//           style={{ fontSize: "clamp(13px,1.4vw,15.5px)" }}
-//         >
-//           We don't do templates, retainers, or rushed handoffs. Every site we build is designed
-//           from scratch around your goals — because a website that looks like everyone else's converts
-//           like everyone else's. We're a small studio, and that's the point. When you work with
-//           GoldenHorde, you get real attention, not a ticket number.
-//         </motion.p>
-//       </div>
-//     </section>
-//   );
-// }
+        {/* VIDEO LAYER — low opacity for content overlay */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-[#0c0a07]/70 z-[1]" />
+          {/* Video placeholder — replace src with your video */}
+          <video
+            className="w-full h-full object-cover"
+            autoPlay
+            loop
+            muted
+            playsInline
+            poster="https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=1600&q=80"
+          >
+            <source src="/Goldenhorde.mp4" type="video/mp4" />
+          </video>
+          {/* Fallback bg if no video */}
+          <div className="absolute inset-0 z-[-1]"
+            style={{ backgroundImage: "url(https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=1600&q=80)", backgroundSize: "cover", backgroundPosition: "center" }} />
+        </div>
 
-// /* ── Service Card ── */
-// function ServiceCard({ num, title, desc, tags, delay = 0 }) {
-//   const ref = useRef(null);
-//   const inView = useInView(ref, { once: true, margin: "-60px" });
+        {/* Grid */}
+        <div className="absolute inset-0 z-[2] pointer-events-none"
+          style={{
+            backgroundImage: "linear-gradient(rgba(200,144,42,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(200,144,42,.03) 1px,transparent 1px)",
+            backgroundSize: "60px 60px",
+          }} />
 
-//   return (
-//     <motion.div
-//       ref={ref}
-//       initial={{ opacity: 0, y: 28 }} animate={inView ? { opacity: 1, y: 0 } : {}}
-//       transition={{ duration: 0.7, delay }}
-//       className="relative border border-gold/12 rounded-[2px] p-8 md:p-10 bg-gold/[.02] hover:bg-gold/[.045] hover:border-gold/25 transition-all duration-500 group overflow-hidden"
-//     >
-//       {/* Ghost number */}
-//       <div
-//         className="absolute top-4 right-6 font-fraunces text-[80px] leading-none pointer-events-none select-none"
-//         style={{ color: "transparent", WebkitTextStroke: "1px rgba(200,144,42,.07)" }}
-//       >
-//         {num}
-//       </div>
+        {/* Bottom fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-40 z-[3] pointer-events-none"
+          style={{ background: "linear-gradient(to bottom,transparent,#0c0a07)" }} />
 
-//       <div className="font-mono-gh text-[9px] tracking-[3px] text-gold/50 mb-5">{num}</div>
+        Hero content
+        <motion.div
+          style={{ opacity: heroOpacity, y: heroY }}
+          className="relative z-[4] text-center px-6 max-w-4xl mx-auto"
+        >
+          
 
-//       <h3 className="font-fraunces font-semibold text-cream mb-4 leading-tight"
-//         style={{ fontSize: "clamp(22px,2.5vw,32px)" }}>
-//         {title}
-//       </h3>
+          <LR delay={0.5}>
+            <h1 className="font-fraunces font-semibold text-cream leading-[.92] tracking-[-0.02em] mb-4"
+              style={{ fontSize: "clamp(44px,7vw,96px)" }}>
+              {/* We Build Digital */}
+            </h1>
+          </LR>
+          <LR delay={0.65}>
+            <h1 className="font-fraunces font-light italic text-shimmer leading-[.92] tracking-[-0.01em]"
+              style={{ fontSize: "clamp(44px,7vw,96px)" }}>
+              {/* Experiences. */}
+            </h1>
+          </LR>
 
-//       <motion.div
-//         initial={{ scaleX: 0 }} animate={inView ? { scaleX: 1 } : {}}
-//         transition={{ duration: 0.8, delay: delay + 0.3 }}
-//         className="h-px mb-5 origin-left"
-//         style={{ background: "linear-gradient(90deg,#C8902A,rgba(200,144,42,.06))" }}
-//       />
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1 }}
+            className="text-cream/44 leading-[1.8] font-light mt-8 max-w-[560px] mx-auto"
+            style={{ fontSize: "clamp(13px,1.5vw,16px)" }}
+          >
+            {/* GoldenHorde is a boutique web studio specialising in high-performance websites
+            for businesses, creatives, and brands who refuse to blend in. */}
+          </motion.p>
 
-//       <p className="text-cream/44 leading-[1.8] font-light mb-6"
-//         style={{ fontSize: "clamp(13px,1.2vw,14.5px)" }}>
-//         {desc}
-//       </p>
+          <motion.div
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 1.1, delay: 1.3, ease: [0.16, 1, 0.3, 1] }}
+            className="h-px w-32 mx-auto mt-10 origin-center"
+            // style={{ background: "linear-gradient(90deg,transparent,#C8902A,transparent)" }}
+          />
+        </motion.div>
+      </section>
 
-//       <div className="flex flex-wrap gap-2">
-//         {tags.map((t) => (
-//           <span key={t} className="font-mono-gh text-[7px] tracking-[2.5px] border border-gold/18 text-gold/55 px-3 py-1.5 rounded-full">
-//             {t}
-//           </span>
-//         ))}
-//       </div>
+      {/* ══ ABOUT INTRO ══ */}
+      <section className="relative py-24 px-[clamp(20px,6vw,80px)] max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div>
+            <LR delay={0}>
+              <span className="font-mono-gh text-[9px] tracking-[4px] text-gold/60">WHO WE ARE</span>
+            </LR>
+            <div className="mt-5">
+              <LR delay={0.1}>
+                <h2 className="font-fraunces font-semibold text-cream leading-[.95]"
+                  style={{ fontSize: "clamp(32px,4.5vw,58px)" }}>Craftsmen of the</h2>
+              </LR>
+              <LR delay={0.22}>
+                <h2 className="font-fraunces font-light italic text-shimmer leading-[.95]"
+                  style={{ fontSize: "clamp(32px,4.5vw,58px)" }}>Digital Frontier.</h2>
+              </LR>
+            </div>
+          </div>
 
-//       {/* Bottom hover line */}
-//       <div className="absolute bottom-0 left-0 h-px w-0 group-hover:w-full transition-all duration-700"
-//         style={{ background: "linear-gradient(90deg,#C8902A,#E2AC46)" }}
-//       />
-//     </motion.div>
-//   );
-// }
+          <FadeIn delay={0.2}>
+            <div className="space-y-5">
+              <p className="text-cream/50 leading-[1.9] text-[15px] font-light">
+                We're a focused team of designers and developers obsessed with one thing:
+                building websites that actually work — for your business, your brand, and your bottom line.
+              </p>
+              <p className="text-cream/50 leading-[1.9] text-[15px] font-light">
+                From React-powered portfolios with silky animations to scalable WordPress solutions
+                and full-stack e-commerce stores — every project leaves our studio built to perform
+                and designed to impress.
+              </p>
+              <div className="flex items-center gap-4 pt-3">
+                <div className="h-px flex-1 bg-gold/10" />
+                <span className="font-mono-gh text-[8px] tracking-[3px] text-gold/40">EST. 2020</span>
+                <div className="h-px flex-1 bg-gold/10" />
+              </div>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
 
-// /* ── Our Work blurb ── */
-// function WorkBlurb() {
-//   const ref = useRef(null);
-//   const inView = useInView(ref, { once: true, margin: "-60px" });
+      {/* ══ SERVICES GRID ══ */}
+      <section className="py-20 px-[clamp(20px,6vw,80px)] max-w-7xl mx-auto">
 
-//   return (
-//     <section ref={ref} className="px-[5vw] py-[clamp(48px,8vh,96px)] border-t border-gold/10">
-//       <div className="max-w-[1100px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
-//         {/* Left */}
-//         <motion.div
-//           initial={{ opacity: 0, x: -24 }} animate={inView ? { opacity: 1, x: 0 } : {}}
-//           transition={{ duration: 0.7 }}
-//         >
-//           <div className="flex items-center gap-2.5 mb-4">
-//             <div className="w-5 h-px bg-gold" />
-//             <span className="font-mono-gh text-[9px] tracking-[4px] text-gold/65">OUR WORK</span>
-//           </div>
-//           <h2 className="font-fraunces font-semibold text-cream leading-[1.05] mb-5"
-//             style={{ fontSize: "clamp(28px,3.8vw,52px)" }}>
-//             Real projects.{" "}
-//             <span className="text-shimmer font-light italic">Real results.</span>
-//           </h2>
-//           <motion.div
-//             initial={{ scaleX: 0 }} animate={inView ? { scaleX: 1 } : {}}
-//             transition={{ duration: 0.9, delay: 0.3 }}
-//             className="h-px w-3/4 mb-6 origin-left"
-//             style={{ background: "linear-gradient(90deg,#C8902A,rgba(200,144,42,.08))" }}
-//           />
-//           <p className="text-cream/44 leading-[1.85] font-light mb-8"
-//             style={{ fontSize: "clamp(13px,1.3vw,15px)" }}>
-//             Every project in our portfolio started with a conversation and ended with a client who
-//             had something they were genuinely proud of. We don't pad our work with filler projects —
-//             what you see is what we've actually shipped, for real people and real businesses.
-//             Browse it, steal inspiration, then let's talk about what we can build for you.
-//           </p>
-//           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
-//             <Link
-//               to="/work"
-//               className="inline-flex items-center gap-2.5 border border-gold/22 text-cream/44 hover:text-gold-l px-7 py-3.5 rounded-[2px] font-mono-gh text-[10px] tracking-[3px] font-medium no-underline transition-all duration-300"
-//             >
-//               VIEW PORTFOLIO <ArrowIcon />
-//             </Link>
-//           </motion.div>
-//         </motion.div>
+        {/* Section header */}
+        <div className="mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <div>
+            <LR>
+              <span className="font-mono-gh text-[9px] tracking-[4px] text-gold/60">OUR SERVICES</span>
+            </LR>
+            <div className="mt-4">
+              <LR delay={0.1}>
+                <h2 className="font-fraunces font-semibold text-cream leading-[.95]"
+                  style={{ fontSize: "clamp(28px,4vw,52px)" }}>What We Build,</h2>
+              </LR>
+              <LR delay={0.2}>
+                <h2 className="font-fraunces font-light italic text-shimmer leading-[.95]"
+                  style={{ fontSize: "clamp(28px,4vw,52px)" }}>and How We Build It.</h2>
+              </LR>
+            </div>
+          </div>
+          <FadeIn delay={0.25}>
+            <p className="text-cream/40 text-[13px] font-light max-w-xs leading-relaxed">
+              Three core services. One standard — exceptional.
+            </p>
+          </FadeIn>
+        </div>
 
-//         {/* Right — decorative stat cards */}
-//         <motion.div
-//           initial={{ opacity: 0, x: 24 }} animate={inView ? { opacity: 1, x: 0 } : {}}
-//           transition={{ duration: 0.7, delay: 0.15 }}
-//           className="hidden md:grid grid-cols-2 gap-4"
-//         >
-//           {[
-//             { label: "CLIENT SATISFACTION", value: "100%" },
-//             { label: "PROJECTS DELIVERED",  value: "87+"  },
-//             { label: "YEARS EXPERIENCE",    value: "4+"   },
-//             { label: "COUNTRIES SERVED",    value: "12+"  },
-//           ].map((pt, i) => (
-//             <motion.div
-//               key={i}
-//               initial={{ opacity: 0, y: 16 }} animate={inView ? { opacity: 1, y: 0 } : {}}
-//               transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
-//               className="border border-gold/14 bg-gold/[.025] backdrop-blur-sm px-5 py-6 rounded-[2px] hover:border-gold/28 hover:bg-gold/[.05] transition-all duration-400"
-//             >
-//               <div className="font-mono-gh text-[7px] tracking-[3px] text-gold/50 mb-2">{pt.label}</div>
-//               <div className="font-fraunces text-[32px] tracking-[1px] text-gold-l leading-none">{pt.value}</div>
-//             </motion.div>
-//           ))}
-//         </motion.div>
-//       </div>
-//     </section>
-//   );
-// }
+        {/* Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {SERVICES.map((s, i) => (
+            <ServiceCard key={i} {...s} index={i} />
+          ))}
+        </div>
+      </section>
 
-// /* ── Process Strip ── */
-// function ProcessStrip() {
-//   const ref = useRef(null);
-//   const inView = useInView(ref, { once: true, margin: "-60px" });
+      {/* ══ WORK SHOWCASES ══ */}
+      <section className="py-24 px-[clamp(20px,6vw,80px)] max-w-7xl mx-auto space-y-32">
 
-//   return (
-//     <section ref={ref} className="px-[5vw] py-[clamp(48px,8vh,96px)] border-t border-gold/10">
-//       <SH tag="HOW WE WORK" h1="From conversation" italic="to launch." center />
+        {/* Section label */}
+        <div className="text-center mb-[-16px]">
+          <LR>
+            <span className="font-mono-gh text-[9px] tracking-[4px] text-gold/60">OUR WORK IN ACTION</span>
+          </LR>
+          <div className="mt-4">
+            <LR delay={0.1}>
+              <h2 className="font-fraunces font-semibold text-cream leading-[.95]"
+                style={{ fontSize: "clamp(28px,4vw,52px)" }}>
+                Projects That{" "}
+                <span className="font-light italic text-shimmer">Speak for Themselves.</span>
+              </h2>
+            </LR>
+          </div>
+        </div>
 
-//       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-[1200px] mx-auto">
-//         {STEPS.map((s, i) => (
-//           <motion.div
-//             key={i}
-//             initial={{ opacity: 0, y: 24 }} animate={inView ? { opacity: 1, y: 0 } : {}}
-//             transition={{ duration: 0.6, delay: i * 0.12 }}
-//             className="relative pl-5 border-l border-gold/18 group"
-//           >
-//             <div className="font-fraunces text-[36px] text-gold/12 leading-none mb-2 select-none">{s.n}</div>
-//             <div className="font-mono-gh text-[8px] tracking-[3px] text-gold-l mb-3">{s.label}</div>
-//             <p className="text-cream/40 text-[13px] leading-[1.75] font-light">{s.text}</p>
-//             <div className="absolute top-0 left-[-1px] w-px h-0 group-hover:h-full transition-all duration-700 origin-top"
-//               style={{ background: "linear-gradient(180deg,#C8902A,transparent)" }}
-//             />
-//           </motion.div>
-//         ))}
-//       </div>
-//     </section>
-//   );
-// }
+        {SHOWCASES.map((showcase, i) => {
+          const isRight = showcase.align === "right";
+          return (
+            <div key={i}
+              className={`grid grid-cols-1 lg:grid-cols-2 gap-12 items-center ${isRight ? "lg:flex-row-reverse" : ""}`}
+            >
+              {/* Slider */}
+              <FadeIn delay={0.1} className={`h-[360px] md:h-[440px] relative ${isRight ? "lg:order-2" : ""}`}>
+                <div className="absolute inset-0 border border-gold/12 rounded-[2px] overflow-hidden">
+                  <ImageSlider images={showcase.images} title={showcase.category} />
+                </div>
+                {/* Corner number */}
+                <div className="absolute -top-4 -left-4 z-10 w-10 h-10 border border-gold/20 bg-[#0c0a07] flex items-center justify-center">
+                  <span className="font-fraunces text-gold text-[18px]">{String(i + 1).padStart(2, "0")}</span>
+                </div>
+              </FadeIn>
 
-// /* ── CTA Banner ── */
-// function CTABanner() {
-//   const ref = useRef(null);
-//   const inView = useInView(ref, { once: true, margin: "-60px" });
+              {/* Text */}
+              <div className={isRight ? "lg:order-1" : ""}>
+                <FadeIn delay={0}>
+                  <span className="font-mono-gh text-[8px] tracking-[4px] text-gold/55 border border-gold/15 px-3 py-1 rounded-full bg-gold/5">
+                    {showcase.category.toUpperCase()}
+                  </span>
+                </FadeIn>
+                <div className="mt-5">
+                  <LR delay={0.1}>
+                    <h3 className="font-fraunces font-semibold text-cream leading-tight"
+                      style={{ fontSize: "clamp(24px,3.5vw,44px)" }}>
+                      {showcase.headline}
+                    </h3>
+                  </LR>
+                </div>
+                <FadeIn delay={0.2}>
+                  <p className="text-cream/44 leading-[1.85] font-light mt-5 text-[15px]">
+                    {showcase.sub}
+                  </p>
+                </FadeIn>
+                <motion.div
+                  initial={{ scaleX: 0 }}
+                  whileInView={{ scaleX: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                  className="h-px w-24 mt-6 origin-left"
+                  style={{ background: "linear-gradient(90deg,#C8902A,transparent)" }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </section>
 
-//   return (
-//     <section ref={ref} className="px-[5vw] py-[clamp(60px,10vh,120px)] relative overflow-hidden border-t border-gold/10">
-//       <div className="absolute inset-0 pointer-events-none"
-//         style={{ background: "radial-gradient(ellipse 80% 60% at 50% 50%,rgba(200,144,42,.09) 0%,transparent 70%)" }}
-//       />
-//       <div className="grid-bg absolute inset-0 opacity-20" />
+      {/* ══ PROCESS ══ */}
+      <section className="py-24 px-[clamp(20px,6vw,80px)]"
+        style={{ background: "linear-gradient(180deg,transparent,rgba(200,144,42,.04) 50%,transparent)" }}>
+        <div className="max-w-7xl mx-auto">
 
-//       <motion.div
-//         initial={{ opacity: 0, y: 24 }} animate={inView ? { opacity: 1, y: 0 } : {}}
-//         transition={{ duration: 0.7 }}
-//         className="relative z-10 text-center max-w-[700px] mx-auto"
-//       >
-//         <div className="inline-flex items-center gap-2.5 border border-gold/22 px-4 py-[7px] rounded-full mb-8 bg-gold/5 backdrop-blur-sm">
-//           <motion.span
-//             animate={{ opacity: [1, 0.2, 1] }}
-//             transition={{ duration: 1.5, repeat: Infinity }}
-//             className="w-[7px] h-[7px] rounded-full bg-[#5DDB7F] shadow-[0_0_10px_#5DDB7F] inline-block"
-//           />
-//           <span className="font-mono-gh text-[9px] tracking-[3px] text-gold/85">TAKING ON NEW CLIENTS</span>
-//         </div>
+          <div className="text-center mb-16">
+            <LR>
+              <span className="font-mono-gh text-[9px] tracking-[4px] text-gold/60">HOW WE WORK</span>
+            </LR>
+            <div className="mt-4">
+              <LR delay={0.12}>
+                <h2 className="font-fraunces font-semibold text-cream"
+                  style={{ fontSize: "clamp(28px,4vw,52px)" }}>
+                  The Process Behind{" "}
+                  <span className="font-light italic text-shimmer">Great Websites.</span>
+                </h2>
+              </LR>
+            </div>
+          </div>
 
-//         <h2 className="font-fraunces font-semibold leading-[1] tracking-[-0.02em] text-cream mb-5"
-//           style={{ fontSize: "clamp(30px,5vw,68px)" }}>
-//           Ready to get{" "}
-//           <span className="text-shimmer font-light italic">started?</span>
-//         </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {PROCESS.map((step, i) => (
+              <FadeIn key={i} delay={i * 0.12}>
+                <div className="relative p-7 border border-gold/10 rounded-[2px] group hover:border-gold/25 transition-colors duration-400"
+                  style={{ background: "rgba(255,255,255,0.015)" }}>
+                  {/* Number */}
+                  <div className="font-fraunces text-[52px] leading-none text-gold/8 select-none mb-4 tracking-tight">
+                    {step.n}
+                  </div>
+                  {/* Line connector */}
+                  {i < PROCESS.length - 1 && (
+                    <div className="hidden lg:block absolute top-[52px] -right-3 w-6 h-px z-10"
+                      style={{ background: "linear-gradient(to right,rgba(200,144,42,.4),transparent)" }} />
+                  )}
+                  <div className="font-fraunces text-cream text-[18px] font-semibold mb-3">{step.title}</div>
+                  <p className="text-cream/38 text-[13px] font-light leading-relaxed">{step.desc}</p>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
 
-//         <p className="text-cream/44 leading-[1.85] font-light mb-8 max-w-[440px] mx-auto"
-//           style={{ fontSize: "clamp(13px,1.3vw,15px)" }}>
-//           Tell us about your project and we'll get back to you within 24 hours with a plan.
-//         </p>
+      {/* ══ CTA BANNER ══ */}
+      <section className="py-28 px-[clamp(20px,6vw,80px)]">
+        <div className="max-w-3xl mx-auto text-center">
+          <FadeIn>
+            <div className="relative border border-gold/15 rounded-[2px] p-12 md:p-16 overflow-hidden"
+              style={{ background: "linear-gradient(135deg,rgba(200,144,42,.07),rgba(200,144,42,.02))" }}>
 
-//         <div className="flex gap-3 flex-wrap justify-center items-center">
-//           <Stars count={5} size={12} />
-//           <motion.div whileHover={{ scale: 1.03, boxShadow: "0 0 44px rgba(200,144,42,.35)" }} whileTap={{ scale: 0.97 }}>
-//             <Link
-//               to="/contact"
-//               className="inline-flex items-center gap-2.5 text-ink px-8 py-4 rounded-[2px] font-mono-gh text-[10px] tracking-[3px] font-bold no-underline"
-//               style={{ background: "linear-gradient(135deg,#C8902A,#E2AC46)" }}
-//             >
-//               START YOUR PROJECT <ArrowIcon />
-//             </Link>
-//           </motion.div>
-//         </div>
-//       </motion.div>
-//     </section>
-//   );
-// }
+              {/* Corner accents */}
+              {[
+                "top-0 left-0 w-16 h-px",
+                "top-0 left-0 w-px h-16",
+                "bottom-0 right-0 w-16 h-px",
+                "bottom-0 right-0 w-px h-16",
+              ].map((cls, i) => (
+                <div key={i} className={`absolute ${cls} bg-gold/40`} />
+              ))}
 
-// /* ── Page ── */
-// export default function About() {
-//   return (
-//     <main>
-//       <VideoHero />
-//       <StatBar />
-//       <WhyUs />
+              <LR>
+                <span className="font-mono-gh text-[9px] tracking-[4px] text-gold/60">READY TO START?</span>
+              </LR>
+              <div className="mt-5 mb-6">
+                <LR delay={0.12}>
+                  <h2 className="font-fraunces font-semibold text-cream leading-[.93]"
+                    style={{ fontSize: "clamp(28px,4.5vw,52px)" }}>
+                    Let's Build Something
+                  </h2>
+                </LR>
+                <LR delay={0.24}>
+                  <h2 className="font-fraunces font-light italic text-shimmer leading-[.93]"
+                    style={{ fontSize: "clamp(28px,4.5vw,52px)" }}>
+                    Worth Remembering.
+                  </h2>
+                </LR>
+              </div>
 
-//       {/* Services */}
-//       <section className="px-[5vw] py-[clamp(48px,8vh,96px)] border-t border-gold/10">
-//         <SH tag="WHAT WE OFFER" h1="Two things." italic="Done exceptionally." center />
-//         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-[1100px] mx-auto">
-//           {SERVICES.map((s, i) => (
-//             <ServiceCard key={i} {...s} delay={i * 0.15} />
-//           ))}
-//         </div>
-//       </section>
+              <FadeIn delay={0.3}>
+                <p className="text-cream/40 font-light text-[14px] leading-relaxed mb-9 max-w-sm mx-auto">
+                  Every great website starts with a conversation. Tell us about your project and we'll get back within 24 hours.
+                </p>
+              </FadeIn>
 
-//       <WorkBlurb />
-//       <ProcessStrip />
-//       <CTABanner />
-//     </main>
-//   );
-// }
+              <FadeIn delay={0.4}>
+                <motion.a
+                  href="/contact"
+                  whileHover={{ scale: 1.04, boxShadow: "0 0 50px rgba(200,144,42,.4)" }}
+                  whileTap={{ scale: 0.97 }}
+                  className="inline-flex items-center gap-2.5 text-ink px-8 py-4 rounded-[2px] font-mono-gh text-[10px] tracking-[3px] font-bold no-underline"
+                  style={{ background: "linear-gradient(135deg,#C8902A,#E2AC46)" }}
+                >
+                  START YOUR PROJECT <ArrowIcon />
+                </motion.a>
+              </FadeIn>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+    </main>
+  );
+}
