@@ -273,7 +273,7 @@ export default function About() {
             playsInline
             poster="https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=1600&q=80"
           >
-            <source src="/Goldenhorde.mp4" type="video/mp4" />
+            <source src="/Startup.mp4" type="video/mp4" />
           </video>
           {/* Fallback bg if no video */}
           <div className="absolute inset-0 z-[-1]"
@@ -580,3 +580,55 @@ export default function About() {
     </main>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -52,10 +52,14 @@ export default function Navbar() {
       >
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 no-underline">
-          <LogoMark size={28} />
-          <span className="font-fraunces text-[17px] font-bold tracking-[2px] text-cream">
-            GOLDENHORDE
-          </span>
+          <img 
+          src="/logo.png" 
+  alt="GoldenHorde Logo" 
+  className="w-[40px] h-[40px]"
+/>
+         <span className="font-fraunces text-[28px] font-extrabold italic tracking-[3px] text-gold-l">
+            GoldenHorde
+               </span>
         </Link>
 
         {/* Desktop Nav */}
@@ -66,10 +70,10 @@ export default function Navbar() {
               to={lnk.to}
               end={lnk.to === "/"}
               className={({ isActive }) =>
-                `nav-link font-mono-gh text-[10px] tracking-[2.5px] transition-colors duration-300 ${
-                  isActive ? "text-gold-l" : "text-cream/44 hover:text-gold-l"
-                }`
-              }
+  `nav-link font-mono-gh text-[13px] font-bold tracking-[3px] transition-colors duration-300 ${
+    isActive ? "text-gold-l" : "text-cream/70 hover:text-gold-l"
+  }`
+}
             >
               {lnk.label.toUpperCase()}
             </NavLink>
@@ -113,7 +117,6 @@ export default function Navbar() {
               to="/contact"
               className="block bg-gold text-ink py-3.5 rounded-[2px] font-mono-gh text-[10px] tracking-[3px] font-bold text-center no-underline mt-4"
             >
-              START A PROJECT
             </Link>
           </motion.div>
         )}
