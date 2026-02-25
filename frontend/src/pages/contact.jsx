@@ -33,7 +33,7 @@ function useTypewriter(lines, speed = 60, pauseBetween = 900) {
 
   return { displayed, done };
 }
-
+//ddd
 /* ── Stars ── */
 function Stars({ count = 5, size = 11 }) {
   return (
@@ -73,7 +73,7 @@ function LR({ children, delay = 0, className = "" }) {
 
 /* ══════════════════════════════════════
    CONTACT
-══════════════════════════════════════ */
+══════════════════════════════════════ ..*/
 export default function Contact() {
 
   const [form, setForm] = useState({
