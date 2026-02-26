@@ -1,25 +1,53 @@
-import express from 'express'
-import dotenv from 'dotenv';
-dotenv.config();
-import mongoose from 'mongoose';
-import connectDB from './config/db.js';
-import ContactRoute from './routes/Contact.route.js';
-import cors from 'cors';
-const app = express();
+import express from "express";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+import cors from "cors";
+import connectDB from "./config/db.js";
+import ContactRoute from "./routes/Contact.route.js";
 
-app.use(cors({
-    origin:"https://goldenhorde-plum.vercel.app",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials:true,
-}))
-connectDB();
+dotenv.config();
+
+const app = express();
 const PORT = process.env.PORT || 5000;
+
+/* ─────────────────────────────
+   DATABASE CONNECTION
+───────────────────────────── */
+connectDB();
+
+/* ─────────────────────────────
+   MIDDLEWARE
+───────────────────────────── */
+
+// CORS (Frontend Vercel + Localhost allowed)
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://goldenhorde-plum.vercel.app",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/api', ContactRoute);
 
-app.get("/", (req, res) => res.send("Backend is running!"));
-// const PORT = process.env.PORT || 3000;
+/* ─────────────────────────────
+   ROUTES
+───────────────────────────── */
 
-export default app;
+app.use("/api", ContactRoute);
+
+app.get("/", (req, res) => {
+  res.send("Backend is running 🚀");
+});
+
+/* ─────────────────────────────
+   SERVER LISTEN
+───────────────────────────── */
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

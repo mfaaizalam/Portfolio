@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
-// import { submitContactForm } from "../lib/api";
+import { submitContactForm } from "../lib/api";
 
 /* ── Typewriter Hook ── */
 function useTypewriter(lines, speed = 60, pauseBetween = 900) {
@@ -97,8 +97,9 @@ export default function Contact() {
       const res = await submitContactForm(form);
       setStatus(res.message || "Message sent successfully!");
       setForm({ name: "", email: "", project: "", message: "" });
-    } catch {
+    } catch(err){
       setStatus("Failed to send message");
+      console.log(err)
     } finally {
       setSending(false);
     }
