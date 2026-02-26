@@ -10,20 +10,13 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-/* ─────────────────────────────
-   DATABASE CONNECTION
-───────────────────────────── */
-
-/* ─────────────────────────────
-MIDDLEWARE
-───────────────────────────── */
 
 // CORS (Frontend Vercel + Localhost allowed)
 app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://goldenhorde-plum.vercel.app",
+      "https://goldenhorde.vercel.app",
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
