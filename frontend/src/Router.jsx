@@ -6,7 +6,7 @@ import Contact from "./pages/Contact";
 
 const router = createBrowserRouter([
   {
-    element: <Layout />,  // Layout wrap karega har page ko
+    element: <Layout />,  // Layout wrap karega har page ko hello
     children: [
       {
         path: "/",
