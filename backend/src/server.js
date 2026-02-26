@@ -13,10 +13,9 @@ const PORT = process.env.PORT || 5000;
 /* ─────────────────────────────
    DATABASE CONNECTION
 ───────────────────────────── */
-connectDB();
 
 /* ─────────────────────────────
-   MIDDLEWARE
+MIDDLEWARE
 ───────────────────────────── */
 
 // CORS (Frontend Vercel + Localhost allowed)
@@ -31,6 +30,7 @@ app.use(
   })
 );
 
+connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
