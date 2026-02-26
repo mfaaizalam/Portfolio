@@ -18,9 +18,7 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/api', ContactRoute);
-app.get('/', (req, res) => {
-    res.send('Hello World!');
-});
+
 app.get("/", (req, res) => res.send("Backend is running!"));
 // const PORT = process.env.PORT || 3000;
 
