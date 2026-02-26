@@ -8,7 +8,7 @@ import cors from 'cors';
 const app = express();
 
 app.use(cors({
-    origin:"frontend url",
+    origin:"https://goldenhorde-plum.vercel.app",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials:true,
 }))
