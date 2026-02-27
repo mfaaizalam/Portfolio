@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
-// import { submitContactForm } from "../lib/api";
+import { submitContactForm } from "../lib/api";
 
 /* ── Typewriter Hook ── */
 function useTypewriter(lines, speed = 60, pauseBetween = 900) {
@@ -33,7 +33,7 @@ function useTypewriter(lines, speed = 60, pauseBetween = 900) {
 
   return { displayed, done };
 }
-
+//ddd
 /* ── Stars ── */
 function Stars({ count = 5, size = 11 }) {
   return (
@@ -73,7 +73,7 @@ function LR({ children, delay = 0, className = "" }) {
 
 /* ══════════════════════════════════════
    CONTACT
-══════════════════════════════════════ */
+══════════════════════════════════════ ..*/
 export default function Contact() {
 
   const [form, setForm] = useState({
@@ -97,8 +97,9 @@ export default function Contact() {
       const res = await submitContactForm(form);
       setStatus(res.message || "Message sent successfully!");
       setForm({ name: "", email: "", project: "", message: "" });
-    } catch {
+    } catch(err){
       setStatus("Failed to send message");
+      console.log(err)
     } finally {
       setSending(false);
     }
