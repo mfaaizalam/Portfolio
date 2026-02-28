@@ -377,14 +377,7 @@ export default function Contact() {
         </div>
       </div>
 
-      {/* Ghost letters bottom-right (decorative, same as original) */}
-      <div
-        className="hidden lg:block font-fraunces absolute right-0 bottom-[-4%] text-gold/[0.04] pointer-events-none select-none leading-none italic z-[1]"
-        style={{ fontSize: "min(200px,14vw)" }}
-        aria-hidden
-      >
-        GH
-      </div>
+
     </main>
   );
 }

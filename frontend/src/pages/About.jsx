@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { motion, useInView, useScroll, useTransform } from "framer-motion";
+import { motion, useInView, useScroll, useTransform, AnimatePresence } from "framer-motion";
 
 /* ── Reusable Line Reveal ── */
 function LR({ children, delay = 0, className = "" }) {
@@ -67,11 +67,8 @@ function ServiceCard({ icon, title, description, tags, index }) {
         transition: "background 0.4s ease",
       }}
     >
-      {/* Corner accent */}
       <div className="absolute top-0 left-0 w-12 h-px bg-gradient-to-r from-gold/60 to-transparent" />
       <div className="absolute top-0 left-0 w-px h-12 bg-gradient-to-b from-gold/60 to-transparent" />
-
-      {/* Hover glow */}
       <motion.div
         animate={{ opacity: hovered ? 1 : 0 }}
         transition={{ duration: 0.4 }}
@@ -82,23 +79,15 @@ function ServiceCard({ icon, title, description, tags, index }) {
           transform: "translate(40%,40%)",
         }}
       />
-
-      {/* Icon */}
       <div className="mb-6 w-12 h-12 border border-gold/20 rounded-[2px] flex items-center justify-center bg-gold/5">
         {icon}
       </div>
-
-      {/* Title */}
       <div className="font-fraunces text-cream text-[22px] font-semibold mb-3 leading-snug">
         {title}
       </div>
-
-      {/* Description */}
       <p className="text-cream/44 font-light leading-[1.8] mb-6 text-[14px]">
         {description}
       </p>
-
-      {/* Tags */}
       <div className="flex flex-wrap gap-2">
         {tags.map((tag, i) => (
           <span key={i}
@@ -107,8 +96,6 @@ function ServiceCard({ icon, title, description, tags, index }) {
           </span>
         ))}
       </div>
-
-      {/* Arrow link */}
       <motion.div
         animate={{ x: hovered ? 4 : 0, opacity: hovered ? 1 : 0.4 }}
         transition={{ duration: 0.3 }}
@@ -153,9 +140,7 @@ function ImageSlider({ images, title }) {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         />
       ))}
-      {/* Overlay gradient */}
       <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent pointer-events-none" />
-      {/* Dots */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
         {images.map((_, i) => (
           <button key={i} onClick={() => goTo(i)}
@@ -168,7 +153,108 @@ function ImageSlider({ images, title }) {
   );
 }
 
-/* ── Work Showcase ── */
+/* ── Animated Counter ── */
+function Counter({ value, suffix = "", duration = 2 }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-40px" });
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!inView) return;
+    let start = 0;
+    const end = parseInt(value);
+    const step = end / (duration * 60);
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= end) { setCount(end); clearInterval(timer); }
+      else setCount(Math.floor(start));
+    }, 1000 / 60);
+    return () => clearInterval(timer);
+  }, [inView, value, duration]);
+
+  return <span ref={ref}>{count}{suffix}</span>;
+}
+
+/* ── Sliding Word Cycler ── */
+function WordCycler({ words, className = "" }) {
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setIndex(i => (i + 1) % words.length), 2800);
+    return () => clearInterval(t);
+  }, [words.length]);
+
+  return (
+    <span className={`relative inline-block overflow-hidden align-bottom ${className}`}
+      style={{ minWidth: "260px" }}>
+      <AnimatePresence mode="wait">
+        <motion.span
+          key={index}
+          className="block"
+          initial={{ y: "100%", opacity: 0 }}
+          animate={{ y: "0%", opacity: 1 }}
+          exit={{ y: "-100%", opacity: 0 }}
+          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {words[index]}
+        </motion.span>
+      </AnimatePresence>
+    </span>
+  );
+}
+
+/* ── Hover Reveal Paragraph ── */
+function HoverRevealText({ lines }) {
+  return (
+    <div className="space-y-4">
+      {lines.map((line, i) => (
+        <motion.p
+          key={i}
+          className="text-[15px] font-light leading-[1.9] cursor-default group"
+          style={{ color: "rgba(255,245,220,0.44)" }}
+          whileHover={{ color: "rgba(255,245,220,0.75)", x: 6 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+        >
+          <motion.span
+            className="inline-block w-0 h-px align-middle mr-0 bg-gold/60 group-hover:w-4 group-hover:mr-2"
+            style={{ verticalAlign: "middle" }}
+            transition={{ duration: 0.3 }}
+          />
+          {line}
+        </motion.p>
+      ))}
+    </div>
+  );
+}
+
+/* ── Stat Pill ── */
+function StatPill({ number, suffix, label, delay }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-40px" });
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, scale: 0.88, y: 20 }}
+      animate={inView ? { opacity: 1, scale: 1, y: 0 } : {}}
+      transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
+      className="relative flex flex-col items-center justify-center text-center px-8 py-6 border border-gold/12 rounded-[2px] overflow-hidden group hover:border-gold/30 transition-colors duration-500"
+      style={{ background: "rgba(255,255,255,0.018)" }}
+    >
+      <motion.div
+        className="absolute inset-0 pointer-events-none"
+        initial={{ opacity: 0 }}
+        whileHover={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
+        style={{ background: "radial-gradient(ellipse at 50% 100%,rgba(200,144,42,.12),transparent 70%)" }}
+      />
+      <div className="font-fraunces text-gold leading-none mb-1" style={{ fontSize: "clamp(36px,4vw,52px)" }}>
+        <Counter value={number} suffix={suffix} />
+      </div>
+      <div className="font-mono-gh text-[8px] tracking-[3px] text-cream/35 uppercase">{label}</div>
+    </motion.div>
+  );
+}
+
+/* ── Work Showcases ── */
 const SHOWCASES = [
   {
     category: "React Portfolio",
@@ -205,7 +291,7 @@ const SHOWCASES = [
   },
 ];
 
-/* ── Process Step ── */
+/* ── Process ── */
 const PROCESS = [
   { n: "01", title: "Discovery", desc: "We deep-dive into your brand, audience, and goals before a single pixel is placed." },
   { n: "02", title: "Design", desc: "Custom wireframes and high-fidelity designs crafted around your unique identity." },
@@ -260,57 +346,39 @@ export default function About() {
 
       {/* ══ HERO SECTION ══ */}
       <section ref={heroRef} className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
-
-        {/* VIDEO LAYER — low opacity for content overlay */}
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-[#0c0a07]/70 z-[1]" />
-          {/* Video placeholder — replace src with your video */}
           <video
             className="w-full h-full object-cover"
-            autoPlay
-            loop
-            muted
-            playsInline
+            autoPlay loop muted playsInline
             poster="https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=1600&q=80"
           >
-            <source src="/Startup.mp4" type="video/mp4" />
+            <source src="GOLDEN VID.mp4" type="video/mp4" />
           </video>
-          {/* Fallback bg if no video */}
           <div className="absolute inset-0 z-[-1]"
             style={{ backgroundImage: "url(https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=1600&q=80)", backgroundSize: "cover", backgroundPosition: "center" }} />
         </div>
-
-        {/* Grid */}
         <div className="absolute inset-0 z-[2] pointer-events-none"
           style={{
             backgroundImage: "linear-gradient(rgba(200,144,42,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(200,144,42,.03) 1px,transparent 1px)",
             backgroundSize: "60px 60px",
           }} />
-
-        {/* Bottom fade */}
         <div className="absolute bottom-0 left-0 right-0 h-40 z-[3] pointer-events-none"
           style={{ background: "linear-gradient(to bottom,transparent,#0c0a07)" }} />
-
-        Hero content
         <motion.div
           style={{ opacity: heroOpacity, y: heroY }}
           className="relative z-[4] text-center px-6 max-w-4xl mx-auto"
         >
-          
-
           <LR delay={0.5}>
             <h1 className="font-fraunces font-semibold text-cream leading-[.92] tracking-[-0.02em] mb-4"
               style={{ fontSize: "clamp(44px,7vw,96px)" }}>
-              {/* We Build Digital */}
             </h1>
           </LR>
           <LR delay={0.65}>
             <h1 className="font-fraunces font-light italic text-shimmer leading-[.92] tracking-[-0.01em]"
               style={{ fontSize: "clamp(44px,7vw,96px)" }}>
-              {/* Experiences. */}
             </h1>
           </LR>
-
           <motion.p
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -318,99 +386,130 @@ export default function About() {
             className="text-cream/44 leading-[1.8] font-light mt-8 max-w-[560px] mx-auto"
             style={{ fontSize: "clamp(13px,1.5vw,16px)" }}
           >
-            {/* GoldenHorde is a boutique web studio specialising in high-performance websites
-            for businesses, creatives, and brands who refuse to blend in. */}
           </motion.p>
-
           <motion.div
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
             transition={{ duration: 1.1, delay: 1.3, ease: [0.16, 1, 0.3, 1] }}
             className="h-px w-32 mx-auto mt-10 origin-center"
-            // style={{ background: "linear-gradient(90deg,transparent,#C8902A,transparent)" }}
           />
         </motion.div>
       </section>
 
-      {/* ══ ABOUT INTRO ══ */}
-      <section className="relative py-24 px-[clamp(20px,6vw,80px)] max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div>
-            <LR delay={0}>
+
+      {/* ══ WHO WE ARE INTRO ══ */}
+      <section className="relative py-28 px-[clamp(20px,6vw,80px)] max-w-7xl mx-auto">
+
+        {/* Subtle left border accent */}
+        <motion.div
+          initial={{ scaleY: 0 }}
+          whileInView={{ scaleY: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute left-[clamp(20px,6vw,80px)] top-0 bottom-0 w-px origin-top hidden lg:block"
+          style={{ background: "linear-gradient(to bottom, transparent, rgba(200,144,42,.2), transparent)" }}
+        />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+
+          {/* LEFT — headline with sliding word cycler */}
+          <div className="lg:pl-10">
+            <FadeIn delay={0}>
               <span className="font-mono-gh text-[9px] tracking-[4px] text-gold/60">WHO WE ARE</span>
-            </LR>
-            <div className="mt-5">
+            </FadeIn>
+
+            <div className="mt-6 mb-8">
               <LR delay={0.1}>
                 <h2 className="font-fraunces font-semibold text-cream leading-[.95]"
-                  style={{ fontSize: "clamp(32px,4.5vw,58px)" }}>Craftsmen of the</h2>
+                  style={{ fontSize: "clamp(32px,4.5vw,58px)" }}>
+                  Craftsmen of the
+                </h2>
               </LR>
               <LR delay={0.22}>
                 <h2 className="font-fraunces font-light italic text-shimmer leading-[.95]"
-                  style={{ fontSize: "clamp(32px,4.5vw,58px)" }}>Digital Frontier.</h2>
+                  style={{ fontSize: "clamp(32px,4.5vw,58px)" }}>
+                  Digital Frontier.
+                </h2>
               </LR>
+            </div>
+
+            {/* Animated cycling descriptor */}
+            <FadeIn delay={0.35}>
+              <div className="flex items-center gap-3 mb-8 font-mono-gh text-[10px] tracking-[3px] text-cream/40">
+                <span>WE ARE</span>
+                <span className="relative overflow-hidden inline-block" style={{ minWidth: 180, height: "1.4em" }}>
+                  <AnimatePresence mode="wait">
+                    {["DESIGNERS", "DEVELOPERS", "STRATEGISTS", "STORYTELLERS"].map((word, i, arr) => {
+                      // We'll use a self-contained inner component to handle this
+                      return null;
+                    })}
+                  </AnimatePresence>
+                  <_CyclingWord words={["DESIGNERS", "DEVELOPERS", "STRATEGISTS", "STORYTELLERS"]} />
+                </span>
+              </div>
+            </FadeIn>
+
+            {/* Divider */}
+            <motion.div
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="h-px w-20 origin-left mb-8"
+              style={{ background: "linear-gradient(90deg,#C8902A,transparent)" }}
+            />
+
+            {/* Stats row */}
+            <div className="grid grid-cols-3 gap-3">
+              <StatPill number={120} suffix="+" label="Projects" delay={0.1} />
+              <StatPill number={5} suffix="yrs" label="Experience" delay={0.2} />
+              <StatPill number={98} suffix="%" label="Satisfaction" delay={0.3} />
             </div>
           </div>
 
+          {/* RIGHT — hover-interactive paragraphs */}
           <FadeIn delay={0.2}>
-            <div className="space-y-5">
-              <p className="text-cream/50 leading-[1.9] text-[15px] font-light">
-                We're a focused team of designers and developers obsessed with one thing:
-                building websites that actually work — for your business, your brand, and your bottom line.
-              </p>
-              <p className="text-cream/50 leading-[1.9] text-[15px] font-light">
-                From React-powered portfolios with silky animations to scalable WordPress solutions
-                and full-stack e-commerce stores — every project leaves our studio built to perform
-                and designed to impress.
-              </p>
-              <div className="flex items-center gap-4 pt-3">
+            <div className="space-y-10">
+
+              {/* Intro paragraph block */}
+              <div>
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-5 h-px bg-gold/40" />
+                  <span className="font-mono-gh text-[8px] tracking-[3px] text-gold/50">OUR STORY</span>
+                </div>
+                <HoverRevealText lines={[
+                  "We're a focused team of designers and developers obsessed with one thing: building websites that actually work — for your business, your brand, and your bottom line.",
+                  "Founded on the belief that great design and great code are inseparable, GoldenHorde was built to serve ambitious clients who see their website as a business asset — not a checkbox.",
+                ]} />
+              </div>
+
+              {/* Philosophy block */}
+              <div>
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-5 h-px bg-gold/40" />
+                  <span className="font-mono-gh text-[8px] tracking-[3px] text-gold/50">OUR PHILOSOPHY</span>
+                </div>
+                <HoverRevealText lines={[
+                  "From React-powered portfolios with silky animations to scalable WordPress solutions and full-stack e-commerce stores — every project leaves our studio built to perform and designed to impress.",
+                  "We don't do templates. We don't cut corners. Every pixel is intentional, every line of code purposeful. Your vision deserves nothing less.",
+                ]} />
+              </div>
+
+              {/* Est. divider */}
+              <div className="flex items-center gap-4 pt-2">
                 <div className="h-px flex-1 bg-gold/10" />
-                <span className="font-mono-gh text-[8px] tracking-[3px] text-gold/40">EST. 2020</span>
+                <span className="font-mono-gh text-[8px] tracking-[3px] text-gold/35">EST. 2020</span>
                 <div className="h-px flex-1 bg-gold/10" />
               </div>
+
             </div>
           </FadeIn>
         </div>
       </section>
 
-      {/* ══ SERVICES GRID ══ */}
-      <section className="py-20 px-[clamp(20px,6vw,80px)] max-w-7xl mx-auto">
-
-        {/* Section header */}
-        <div className="mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-          <div>
-            <LR>
-              <span className="font-mono-gh text-[9px] tracking-[4px] text-gold/60">OUR SERVICES</span>
-            </LR>
-            <div className="mt-4">
-              <LR delay={0.1}>
-                <h2 className="font-fraunces font-semibold text-cream leading-[.95]"
-                  style={{ fontSize: "clamp(28px,4vw,52px)" }}>What We Build,</h2>
-              </LR>
-              <LR delay={0.2}>
-                <h2 className="font-fraunces font-light italic text-shimmer leading-[.95]"
-                  style={{ fontSize: "clamp(28px,4vw,52px)" }}>and How We Build It.</h2>
-              </LR>
-            </div>
-          </div>
-          <FadeIn delay={0.25}>
-            <p className="text-cream/40 text-[13px] font-light max-w-xs leading-relaxed">
-              Three core services. One standard — exceptional.
-            </p>
-          </FadeIn>
-        </div>
-
-        {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {SERVICES.map((s, i) => (
-            <ServiceCard key={i} {...s} index={i} />
-          ))}
-        </div>
-      </section>
 
       {/* ══ WORK SHOWCASES ══ */}
       <section className="py-24 px-[clamp(20px,6vw,80px)] max-w-7xl mx-auto space-y-32">
-
-        {/* Section label */}
         <div className="text-center mb-[-16px]">
           <LR>
             <span className="font-mono-gh text-[9px] tracking-[4px] text-gold/60">OUR WORK IN ACTION</span>
@@ -432,18 +531,14 @@ export default function About() {
             <div key={i}
               className={`grid grid-cols-1 lg:grid-cols-2 gap-12 items-center ${isRight ? "lg:flex-row-reverse" : ""}`}
             >
-              {/* Slider */}
               <FadeIn delay={0.1} className={`h-[360px] md:h-[440px] relative ${isRight ? "lg:order-2" : ""}`}>
                 <div className="absolute inset-0 border border-gold/12 rounded-[2px] overflow-hidden">
                   <ImageSlider images={showcase.images} title={showcase.category} />
                 </div>
-                {/* Corner number */}
                 <div className="absolute -top-4 -left-4 z-10 w-10 h-10 border border-gold/20 bg-[#0c0a07] flex items-center justify-center">
                   <span className="font-fraunces text-gold text-[18px]">{String(i + 1).padStart(2, "0")}</span>
                 </div>
               </FadeIn>
-
-              {/* Text */}
               <div className={isRight ? "lg:order-1" : ""}>
                 <FadeIn delay={0}>
                   <span className="font-mono-gh text-[8px] tracking-[4px] text-gold/55 border border-gold/15 px-3 py-1 rounded-full bg-gold/5">
@@ -481,7 +576,6 @@ export default function About() {
       <section className="py-24 px-[clamp(20px,6vw,80px)]"
         style={{ background: "linear-gradient(180deg,transparent,rgba(200,144,42,.04) 50%,transparent)" }}>
         <div className="max-w-7xl mx-auto">
-
           <div className="text-center mb-16">
             <LR>
               <span className="font-mono-gh text-[9px] tracking-[4px] text-gold/60">HOW WE WORK</span>
@@ -496,17 +590,14 @@ export default function About() {
               </LR>
             </div>
           </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {PROCESS.map((step, i) => (
               <FadeIn key={i} delay={i * 0.12}>
                 <div className="relative p-7 border border-gold/10 rounded-[2px] group hover:border-gold/25 transition-colors duration-400"
                   style={{ background: "rgba(255,255,255,0.015)" }}>
-                  {/* Number */}
                   <div className="font-fraunces text-[52px] leading-none text-gold/8 select-none mb-4 tracking-tight">
                     {step.n}
                   </div>
-                  {/* Line connector */}
                   {i < PROCESS.length - 1 && (
                     <div className="hidden lg:block absolute top-[52px] -right-3 w-6 h-px z-10"
                       style={{ background: "linear-gradient(to right,rgba(200,144,42,.4),transparent)" }} />
@@ -526,8 +617,6 @@ export default function About() {
           <FadeIn>
             <div className="relative border border-gold/15 rounded-[2px] p-12 md:p-16 overflow-hidden"
               style={{ background: "linear-gradient(135deg,rgba(200,144,42,.07),rgba(200,144,42,.02))" }}>
-
-              {/* Corner accents */}
               {[
                 "top-0 left-0 w-16 h-px",
                 "top-0 left-0 w-px h-16",
@@ -536,7 +625,6 @@ export default function About() {
               ].map((cls, i) => (
                 <div key={i} className={`absolute ${cls} bg-gold/40`} />
               ))}
-
               <LR>
                 <span className="font-mono-gh text-[9px] tracking-[4px] text-gold/60">READY TO START?</span>
               </LR>
@@ -554,13 +642,11 @@ export default function About() {
                   </h2>
                 </LR>
               </div>
-
               <FadeIn delay={0.3}>
                 <p className="text-cream/40 font-light text-[14px] leading-relaxed mb-9 max-w-sm mx-auto">
                   Every great website starts with a conversation. Tell us about your project and we'll get back within 24 hours.
                 </p>
               </FadeIn>
-
               <FadeIn delay={0.4}>
                 <motion.a
                   href="/contact"
@@ -581,54 +667,26 @@ export default function About() {
   );
 }
 
+/* ── Internal cycling word component ── */
+function _CyclingWord({ words }) {
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setIndex(i => (i + 1) % words.length), 2800);
+    return () => clearInterval(t);
+  }, [words.length]);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  return (
+    <AnimatePresence mode="wait">
+      <motion.span
+        key={index}
+        className="absolute inset-0 flex items-center text-gold"
+        initial={{ y: "100%", opacity: 0 }}
+        animate={{ y: "0%", opacity: 1 }}
+        exit={{ y: "-100%", opacity: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      >
+        {words[index]}
+      </motion.span>
+    </AnimatePresence>
+  );
+}

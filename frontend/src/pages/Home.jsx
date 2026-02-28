@@ -451,7 +451,7 @@ export default function About() {
         </div>
       </section>
 
-      {/* ══ WORK SHOWCASES ══ */}
+      {/* ══ WORK SHOWCASES ══
       <section className="py-24 px-[clamp(20px,6vw,80px)] max-w-7xl mx-auto space-y-32">
         <div className="text-center mb-[-16px]">
           <LR>
@@ -509,8 +509,8 @@ export default function About() {
               </div>
             </div>
           );
-        })}
-      </section>
+        })} */}
+      {/* </section> */}
 
       {/* ══ PROCESS ══ */}
       <section className="py-24 px-[clamp(20px,6vw,80px)]"
